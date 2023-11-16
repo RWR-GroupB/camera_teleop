@@ -6,7 +6,7 @@ import cv2
 import torch
 from scipy.spatial.transform import Rotation as R
 
-from pydrake.math import RotationMatrix, RigidTransform
+# from pydrake.math import RotationMatrix, RigidTransform
 
 import rospy
 from geometry_msgs.msg import Point, Transform
@@ -134,13 +134,13 @@ class OakDIngress:
             #     rospy.logwarn('Wrist position is too close to camera')
             #     return
 
-            rot_mat = RotationMatrix(rotation_matrix)
-            wrist_transform = RigidTransform(R=rot_mat, p=wrist_position)
+            # rot_mat = RotationMatrix(rotation_matrix)
+            # wrist_transform = RigidTransform(R=rot_mat, p=wrist_position)
 
             print(f'Wrist position: {wrist_position}')
             # Publish wrist position as a points
-            self.publish_wrist(wrist_transform)
-            self.publish_tf('wrist_transform', wrist_transform)
+            # self.publish_wrist(wrist_transform)
+            # self.publish_tf('wrist_transform', wrist_transform)
 
         # Publish joints
         # self.recorded_mano_joints.append(normalized_joint_pos)
@@ -153,33 +153,33 @@ class OakDIngress:
 
         self.publish_joints(normalized_joint_pos)
 
-    def publish_tf(self, frame: str, pose: RigidTransform, from_frame: str = "world"):
-        '''
-        Publish a RigidTransform as tf2 message.
-        '''
-        xyz = pose.translation().tolist()
-        quat = pose.rotation().ToQuaternion()
-        quat_list = [quat.x(), quat.y(), quat.z(), quat.w()]
+    # def publish_tf(self, frame: str, pose: RigidTransform, from_frame: str = "world"):
+    #     '''
+    #     Publish a RigidTransform as tf2 message.
+    #     '''
+    #     xyz = pose.translation().tolist()
+    #     quat = pose.rotation().ToQuaternion()
+    #     quat_list = [quat.x(), quat.y(), quat.z(), quat.w()]
 
-        self.tf_broadcaster.sendTransform(
-            xyz, quat_list, rospy.Time.now(), frame, from_frame
-        )
+    #     self.tf_broadcaster.sendTransform(
+    #         xyz, quat_list, rospy.Time.now(), frame, from_frame
+    #     )
 
-    def publish_wrist(self, wrist_tf: RigidTransform):
-        '''
-        Publish the transform of the wrist as Transform message.
-        '''
-        wrist_transform = Transform()
-        wrist_transform.translation.x = wrist_tf.translation()[0]
-        wrist_transform.translation.y = wrist_tf.translation()[1]
-        wrist_transform.translation.z = wrist_tf.translation()[2]
+    # def publish_wrist(self, wrist_tf: RigidTransform):
+    #     '''
+    #     Publish the transform of the wrist as Transform message.
+    #     '''
+    #     wrist_transform = Transform()
+    #     wrist_transform.translation.x = wrist_tf.translation()[0]
+    #     wrist_transform.translation.y = wrist_tf.translation()[1]
+    #     wrist_transform.translation.z = wrist_tf.translation()[2]
 
-        wrist_transform.rotation.x = -wrist_tf.rotation().ToQuaternion().x()
-        wrist_transform.rotation.y = wrist_tf.rotation().ToQuaternion().y()
-        wrist_transform.rotation.z = -wrist_tf.rotation().ToQuaternion().z()
-        wrist_transform.rotation.w = wrist_tf.rotation().ToQuaternion().w()
+    #     wrist_transform.rotation.x = -wrist_tf.rotation().ToQuaternion().x()
+    #     wrist_transform.rotation.y = wrist_tf.rotation().ToQuaternion().y()
+    #     wrist_transform.rotation.z = -wrist_tf.rotation().ToQuaternion().z()
+    #     wrist_transform.rotation.w = wrist_tf.rotation().ToQuaternion().w()
 
-        self.wrist_pub.publish(wrist_transform)
+    #     self.wrist_pub.publish(wrist_transform)
 
     def publish_joints(self, joint_pos):
         # Publish joints
