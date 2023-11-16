@@ -1,0 +1,5 @@
+opencv-python >= 4.5.1.48
+depthai>=2.13
+scipy==1.10.1
+pydrake==0.2.1
+torch==2.1.1

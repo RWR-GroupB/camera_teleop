@@ -1,0 +1,30 @@
+# Python
+*.pyc
+*.pyo
+*.pyd
+__pycache__/
+*.so
+*.egg
+*.egg-info/
+dist/
+build/
+*.tar.gz
+
+# ROS
+log/
+*.bag
+*.bag.active
+*.bag.orig
+devel/
+build/
+
+# IDEs and editors
+.vscode/
+*.swp
+*.swo
+*.swn
+.idea/
+
+# OS generated
+.DS_Store
+Thumbs.db
