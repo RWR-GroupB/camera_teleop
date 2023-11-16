@@ -25,6 +25,8 @@ from utils import retarget_utils
 # from oakd_driver.oakd_rgbd_driver import OakDDriver
 
 from depthai_hand_tracker.HandTrackerEdge import HandTracker
+from depthai_hand_tracker.HandTrackerRenderer import HandTrackerRenderer
+
 from depthai_hand_tracker.Filters import LandmarksSmoothingFilter
 
 
@@ -65,6 +67,10 @@ class OakDIngress:
             xyz=True,
             DEVICE_MXID=None,
         )
+
+        self.renderer = HandTrackerRenderer(
+        tracker=self.tracker,
+        output='.')
         
         self.smoother = LandmarksSmoothingFilter(min_cutoff=1, beta=20, derivate_cutoff=10, disable_value_scaling=True)
 
@@ -101,6 +107,7 @@ class OakDIngress:
 
 
         res_img, hands, bag = self.tracker.next_frame()
+        res_img = self.renderer.draw(res_img, hands, bag)
         if len(hands) <= 0: return
         hand_pred = hands[0]
 
@@ -109,7 +116,9 @@ class OakDIngress:
         except CvBridgeError as e:
             rospy.logwarn(e)
 
+
         self.img_output_pub.publish(output_img)
+        
         
         landmarks = hand_pred.world_landmarks
         smooth_landmarks = self.smoother.apply(landmarks, object_scale=hands[0].rect_w_a)
