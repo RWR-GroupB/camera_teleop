@@ -1,7 +1,7 @@
 <launch>
   
   <node name="mano_ingress_publisher" pkg="camera_teleop" type="oakd_hand_tracker_ingress.py" output="screen"/>
-  <!-- <node name="mano_faive_retargeter" pkg="faive_control" type="mano_faive_retargeter.py" output="screen"/>
-  <node name="gripper_controller_node" pkg="faive_control" type="gripper_controller_node.py" output="screen"/> -->
+  <node name="mano_faive_retargeter" pkg="camera_teleop" type="mano_faive_retargeter.py" output="screen"/>
+  <!-- <node name="gripper_controller_node" pkg="faive_control" type="gripper_controller_node.py" output="screen"/> -->
 
 </launch>
