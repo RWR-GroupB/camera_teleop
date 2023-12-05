@@ -31,11 +31,11 @@ class RetargeterNode:
         
         self.base_path = os.path.dirname(os.path.realpath(__file__))
 
-        self.joint_map = torch.zeros(26, 10).to(device)
+        self.joint_map = torch.zeros(23, 9).to(device)
 
         joint_parameter_names = retarget_utils.JOINT_PARAMETER_NAMES
         gc_tendons = retarget_utils.GC_TENDONS
-
+        # print(enumerate(gc_tendons.items()))
         for i, (name, tendons) in enumerate(gc_tendons.items()):
             self.joint_map[joint_parameter_names.index(name), i] = 1 if len(tendons) == 0 else 0.5
 
@@ -43,7 +43,7 @@ class RetargeterNode:
                 self.joint_map[joint_parameter_names.index(tendon), i] = weight * 0.5
 
         self.urdf_path =  self.base_path + '/../../sim_control/src/'
-        self.urdf_filename = self.urdf_path + "robot-hand-B.xml"
+        self.urdf_filename = self.urdf_path + "robot-hand-v4.xml"
 
         prev_cwd = os.getcwd()
         os.chdir(self.urdf_path)
@@ -51,14 +51,14 @@ class RetargeterNode:
         # print(self.chain)
         os.chdir(prev_cwd)
 
-        self.gc_joints = torch.ones(10).to(self.device) * 30.0
+        self.gc_joints = torch.ones(9).to(self.device) * 30.0
         self.gc_joints.requires_grad_()
 
         self.lr = lr
         self.opt = torch.optim.RMSprop([self.gc_joints], lr=self.lr)
 
         self.root = torch.zeros(1, 3).to(self.device)
-        self.palm_offset = torch.tensor([-0.048, -0.25, 0]).to(self.device)
+        self.palm_offset = torch.tensor([0.038, -0.0557, 0.0095]).to(self.device)
 
         
         # self.scaling_coeffs = torch.tensor([0.7171, 1.0081, 0.9031, 0.7086, 0.4387, 0.3660, 0.3966, 0.3981, 0.4923,
@@ -66,7 +66,7 @@ class RetargeterNode:
         
         # self.scaling_coeffs = torch.tensor([0.2171, 0.1081, 0.2031, 0.2086, 0.2660, 0.2966, 0.1981,
         #                                     0.1554, 0.1932, 0.1884]).to(self.device)
-        self.scaling_coeffs = torch.tensor([0.7]*10).to(self.device)
+        self.scaling_coeffs = torch.tensor([1]*7).to(self.device)
         
         self.scaling_factors_set = hardcoded_keyvector_scaling
         
@@ -84,14 +84,18 @@ class RetargeterNode:
             self.use_scalar_distance = [False, False, False, False, False, False, False, False, False, False]
 
 
+        rotation = np.array([[0,0,1],
+                            [0,1,0],
+                            [-1,0,0]])
 
+        self.rotation = torch.FloatTensor(rotation).to(self.device)
         self.sub = rospy.Subscriber(
             '/ingress/mano', Float32MultiArray, self.callback, queue_size=1, buff_size=2**24)
         self.pub = rospy.Publisher(
             '/faive/policy_output', Float32MultiArray, queue_size=10)
     
 
-    def retarget_finger_mano_joints(self, joints: np.array, warm: bool = False, opt_steps: int = 2, dynamic_keyvector_scaling: bool = False):
+    def retarget_finger_mano_joints(self, joints: np.array, warm: bool = True, opt_steps: int = 2, dynamic_keyvector_scaling: bool = False):
         """
         Process the MANO joints and update the finger joint angles
         joints: (21, 3)
@@ -109,7 +113,7 @@ class RetargeterNode:
 
         if not warm:
             print('Yayy time for a new start')
-            self.gc_joints = torch.zeros(10).to(self.device) * 30
+            self.gc_joints = torch.ones(9).to(self.device) * 30
             self.gc_joints.requires_grad_()
             self.opt = torch.optim.RMSprop([self.gc_joints], lr=self.lr)
 
@@ -134,7 +138,7 @@ class RetargeterNode:
         keyvectors_mano = retarget_utils.get_keyvectors(
             mano_fingertips, mano_palm)
         # print(keyvectors_mano)        
-        print(keyvectors_mano['index2pinky'])
+        print(keyvectors_mano['palm2middle']@self.rotation)
         # norms_mano = {k: torch.norm(v) for k, v in keyvectors_mano.items()}
         # print(f"keyvectors_mano: {norms_mano}")
 
@@ -150,14 +154,13 @@ class RetargeterNode:
                 fingertips[finger] = chain_transforms[finger_tip].transform_points(
                     self.root)
 
-            palm = chain_transforms["hand_palm"].transform_points(
-                self.root) + self.palm_offset
+            palm = self.palm_offset
 
             # print(palm)
             # print(fingertips['middle'])
             # print(fingertips['thumb'])
             keyvectors_faive = retarget_utils.get_keyvectors(fingertips, palm)
-            print(keyvectors_faive['index2pinky'])
+            print(keyvectors_faive['palm2middle'])
             # print('keyvector faive:',keyvectors_faive)
             # norms_faive = {k: torch.norm(v) for k, v in keyvectors_faive.items()}
             # print(f"keyvectors_faive before: {norms_faive}")
@@ -182,8 +185,8 @@ class RetargeterNode:
 
             for i, (keyvector_faive, keyvector_mano) in enumerate(zip(keyvectors_faive.values(), keyvectors_mano.values())):
                 if not self.use_scalar_distance[i]:
-                    loss += self.loss_coeffs[i] * torch.norm(keyvector_mano[:1] -
-                                    keyvector_faive[:1] * self.scaling_coeffs[i].detach()) ** 2
+                    loss += self.loss_coeffs[i] * torch.norm(keyvector_mano@self.rotation -
+                                    keyvector_faive * self.scaling_coeffs[i].detach()) ** 2
                 else:
                     loss += self.loss_coeffs[i] * torch.norm(torch.norm(keyvector_mano) -
                                     torch.norm(keyvector_faive * self.scaling_coeffs[i].detach())) ** 2
@@ -220,7 +223,7 @@ class RetargeterNode:
 
         time = rospy.Time.now()
         assert self.target_angles.shape == (
-            10,), "Expected different output format from retargeter"
+            9,), "Expected different output format from retargeter"
 
         msg = Float32MultiArray
 

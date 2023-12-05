@@ -6,14 +6,11 @@ import numpy as np
 
 
 JOINT_PARAMETER_NAMES = [
-    'thumb_flexion_extension_joint',
     'thumb_adduction_abduction_joint',
     'thumb_finger_prox_joint_virt',
     "thumb_finger_prox_joint",
     "thumb_finger_mid_joint_virt",
     "thumb_finger_mid_joint",
-    "thumb_finger_top_joint_virt",
-    "thumb_finger_top_joint",
 
     "index_finger_prox_virt_joint",
     "index_finger_prox_joint",
@@ -40,10 +37,9 @@ JOINT_PARAMETER_NAMES = [
 ]
 
 GC_TENDONS = {
-    'thumb_flexion_extension_joint': {},
     'thumb_adduction_abduction_joint': {},
     'thumb_finger_prox_joint_virt' : {'thumb_finger_prox_joint': 1},
-    'thumb_finger_mid_joint_virt': {'thumb_finger_mid_joint': 1, 'thumb_finger_top_joint_virt': 0.71, 'thumb_finger_top_joint': 0.71},
+    'thumb_finger_mid_joint_virt': {'thumb_finger_mid_joint': 1},
 
     'index_finger_prox_virt_joint': {'index_finger_prox_joint': 1},
     'index_finger_mid_virt_joint': {'index_finger_mid_joint': 1, 'index_finger_top_virt_joint': 0.71, 'index_finger_top_joint': 0.71},
@@ -108,7 +104,7 @@ FINGER_TO_TIP: Dict[str, str] = {
     "thumb": "thumb_fingertip",
     "index": "index_fingertip",
     "middle": "middle_fingertip",
-    "pinky": "pinky_fingertip",
+    "ring": "pinky_fingertip",
     # "pinky": "pinky_fingertip",
 }
 
@@ -186,17 +182,17 @@ def get_keyvectors(fingertips: Dict[str, torch.Tensor], palm: torch.Tensor):
         'palm2thumb': fingertips['thumb'] - palm,
         'palm2index': fingertips['index'] - palm,
         'palm2middle': fingertips['middle'] - palm,
-        # 'palm2ring': fingertips['ring'] - palm,
-        'palm2pinky': fingertips['pinky'] - palm,
+        'palm2ring': fingertips['ring'] - palm,
+        # 'palm2pinky': fingertips['pinky'] - palm,
         'thumb2index': fingertips['index'] - fingertips['thumb'],
         'thumb2middle': fingertips['middle'] - fingertips['thumb'],
-        # 'thumb2ring': fingertips['ring'] - fingertips['thumb'],
-        'thumb2pinky': fingertips['pinky'] - fingertips['thumb'],
-        'index2middle': fingertips['middle'] - fingertips['index'],
+        'thumb2ring': fingertips['ring'] - fingertips['thumb'],
+        # 'thumb2pinky': fingertips['pinky'] - fingertips['thumb'],
+        # 'index2middle': fingertips['middle'] - fingertips['index'],
         # 'index2ring': fingertips['ring'] - fingertips['index'],
-        'index2pinky': fingertips['pinky'] - fingertips['index'],
+        # # 'index2pinky': fingertips['pinky'] - fingertips['index'],
         # 'middle2ring': fingertips['ring'] - fingertips['middle'],
-        'middle2pinky': fingertips['pinky'] - fingertips['middle']
+        # 'middle2pinky': fingertips['pinky'] - fingertips['middle']
         # 'ring2pinky': fingertips['pinky'] - fingertips['ring'],
 
     }
