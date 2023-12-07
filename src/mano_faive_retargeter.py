@@ -7,6 +7,8 @@ import os
 import pytorch_kinematics as pk
 import rospy
 from std_msgs.msg import Float32MultiArray, MultiArrayDimension
+from mjcf_urdf_simple_converter import convert
+
 
 from utils import retarget_utils, gripper_utils
 
@@ -43,13 +45,14 @@ class RetargeterNode:
                 self.joint_map[joint_parameter_names.index(tendon), i] = weight * 0.5
 
         self.urdf_path =  self.base_path + '/../../sim_control/src/'
-        self.urdf_filename = self.urdf_path + "robot-hand-v4.xml"
-
+        self.urdf_filename = self.urdf_path + "robot-hand-v4"
+        # convert(self.urdf_filename+".xml", self.urdf_filename+".urdf", asset_file_prefix="../../sim_control/src/")
         prev_cwd = os.getcwd()
         os.chdir(self.urdf_path)
-        self.chain = pk.build_chain_from_mjcf(open(self.urdf_filename).read()).to(device=self.device)
+        self.chain = pk.build_chain_from_mjcf(open(self.urdf_filename+".xml").read()).to(device=self.device)
         # print(self.chain)
         os.chdir(prev_cwd)
+        # print(self.chain)
 
         self.gc_joints = torch.ones(9).to(self.device) * 30.0
         self.gc_joints.requires_grad_()
@@ -75,8 +78,8 @@ class RetargeterNode:
         self.loss_coeffs = torch.tensor([5.0, 5.0, 5.0, 5.0, 1.0, 1.0, 1.0, 1.0,
                                             1.0, 1.0, 1.0, 1.0, 1.0, 1.0]).to(self.device)
         
-        self.loss_coeffs = torch.tensor([5.0, 5.0, 5.0, 5.0, 0, 0, 0, 0,
-                                            0, 0, 0, 0, 0, 0]).to(self.device)
+        # self.loss_coeffs = torch.tensor([5.0, 5.0, 5.0, 5.0, 0, 0, 0, 0,
+        #                                     0, 0, 0, 0, 0, 0]).to(self.device)
 
 
         if use_scalar_distance_palm:
@@ -86,10 +89,11 @@ class RetargeterNode:
             self.use_scalar_distance = [False, False, False, False, False, False, False, False, False, False]
 
 
-        rotation = np.array([[0,0,-1],
+        rotation = np.array([[0,0,1],
                             [0,1,0],
-                            [1,0,0]])
+                            [-1,0,0]])
 
+        # rotation = np.eye(3)
         self.rotation = torch.FloatTensor(rotation).to(self.device)
         self.sub = rospy.Subscriber(
             '/ingress/mano', Float32MultiArray, self.callback, queue_size=1, buff_size=2**24)
@@ -115,7 +119,7 @@ class RetargeterNode:
 
         if not warm:
             print('Yayy time for a new start')
-            self.gc_joints = torch.ones(9).to(self.device) * 30
+            self.gc_joints = torch.zeros(9).to(self.device) * 30
             self.gc_joints.requires_grad_()
             self.opt = torch.optim.RMSprop([self.gc_joints], lr=self.lr)
 
@@ -162,6 +166,7 @@ class RetargeterNode:
             # print(fingertips['middle'])
             # print(fingertips['thumb'])
             keyvectors_faive = retarget_utils.get_keyvectors(fingertips, palm)
+            print('faive',keyvectors_faive)
             # print(keyvectors_faive['palm2middle'])
             # print('keyvector faive:',keyvectors_faive)
             # norms_faive = {k: torch.norm(v) for k, v in keyvectors_faive.items()}
