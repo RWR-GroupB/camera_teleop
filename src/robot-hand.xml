@@ -1,0 +1,254 @@
+<mujoco model="robot_hand_B">
+    <compiler angle="radian" />
+    <!-- <option collision="all"/> -->
+    <asset>
+        <!-- Hand Palm -->
+        <mesh name="hand_palm_mesh"
+            file="mesh/palm.stl"
+            scale="0.001 0.001 0.001"></mesh>
+        
+        <!-- Thumb Components -->
+        <mesh name="thumb_palm_attachement_mesh"
+            file="mesh/thumb_palm_attachment.stl"
+            scale="0.001 0.001 0.001"></mesh>
+
+        <mesh name="thumb_adduction_abduction_mesh"
+            file="mesh/thumb_finger_adduction_abduction.stl"
+            scale="0.001 0.001 0.001"></mesh>
+
+        <mesh name="thumb_prox_mesh"
+            file="mesh/thumb_finger_prox.stl"
+            scale="0.001 0.001 0.001"></mesh>
+
+        <mesh name="thumb_mid_mesh"
+            file="mesh/thumb_finger_mid.stl"
+            scale="0.001 0.001 0.001"></mesh>
+
+        <!-- Index Finger Components -->
+        <mesh name="index_finger_knuckle_mesh"
+            file="mesh/finger_index_knuckle.stl"
+            scale="0.001 0.001 0.001"></mesh>
+        <mesh name="index_finger_prox_mesh"
+            file="mesh/finger_index_prox.stl"
+            scale="0.001 0.001 0.001"></mesh>
+        <mesh name="index_finger_mid_mesh"
+            file="mesh/finger_index_mid.stl"
+            scale="0.001 0.001 0.001"></mesh>
+        <mesh name="index_finger_top_mesh"
+            file="mesh/finger_index_top.stl"
+            scale="0.001 0.001 0.001"></mesh>
+
+        <!-- Middle Finger Components -->
+        <mesh name="middle_finger_knuckle_mesh"
+            file="mesh/finger_middle_knuckle.stl"
+            scale="0.001 0.001 0.001"></mesh>
+        <mesh name="middle_finger_prox_mesh"
+            file="mesh/finger_middle_prox.stl"
+            scale="0.001 0.001 0.001"></mesh>
+        <mesh name="middle_finger_mid_mesh"
+            file="mesh/finger_middle_mid.stl"
+            scale="0.001 0.001 0.001"></mesh>
+        <mesh name="middle_finger_top_mesh"
+            file="mesh/finger_middle_top.stl"
+            scale="0.001 0.001 0.001"></mesh>
+
+        <!-- Pinky Finger Components -->
+        <mesh name="pinky_finger_knuckle_mesh"
+            file="mesh/finger_pinky_knuckle.stl"
+            scale="0.001 0.001 0.001"></mesh>
+        <mesh name="pinky_finger_prox_mesh"
+            file="mesh/finger_pinky_prox.stl"
+            scale="0.001 0.001 0.001"></mesh>
+        <mesh name="pinky_finger_mid_mesh"
+            file="mesh/finger_pinky_mid.stl"
+            scale="0.001 0.001 0.001"></mesh>
+        <mesh name="pinky_finger_top_mesh"
+            file="mesh/finger_pinky_top.stl"
+            scale="0.001 0.001 0.001"></mesh>
+
+        <!-- Thumb Components
+        <mesh name="thumb_palm_attachement_mesh"
+            file="mesh/thumb_palm_attachment.stl"
+            scale="0.001 0.001 0.001"></mesh>
+
+        <mesh name="thumb_adduction_abduction_mesh"
+            file="mesh/thumb_finger_adduction_abduction.stl"
+            scale="0.001 0.001 0.001"></mesh>
+
+        <mesh name="thumb_prox_mesh"
+            file="mesh/thumb_finger_prox.stl"
+            scale="0.001 0.001 0.001"></mesh>
+
+        <mesh name="thumb_mid_mesh"
+            file="mesh/thumb_finger_mid.stl"
+            scale="0.001 0.001 0.001"></mesh> -->
+
+    </asset>index_top
+
+    <default>
+        <!-- use same geom params as the Shadow Hand model in IsaacGymEnv for now -->
+        <!-- the density is adjusted so that the total weight of the hand part (not including the base) is the same as the real hand (106g) (therefore the base will have a wrong mass, which shouldn't matter for now) -->
+        <geom rgba="1 1 1 1" type="mesh" density="662" friction="1 0.005 0.001" condim="3" margin="0.0005" contype="1" conaffinity="1"/>
+        <!-- use same joint params as IsaacGymEnv for now -->
+        <!-- TODO: joint damping and position control kp should eventually be set to sysID'ed values -->
+        <joint type="hinge" limited="true" damping="0.05" armature="0.001" margin="0.01" frictionloss="0.001" />
+        <!-- actuator configuration -->
+        <position ctrllimited="true" forcelimited="true" forcerange="-1 1" kp="2."/>
+        <!-- the tendon which limits the two joints creating the rolling joint should be very limited in its length range -->
+        <tendon limited="true" range="-0.001 0.001"/>
+    </default>
+
+
+    <worldbody>
+
+        <body name="hand_palm">
+            <geom type="mesh" mesh="hand_palm_mesh" contype = "1" conaffinity = "0"></geom>
+
+            <body name="timepass" pos = '0 0 0'>
+                <!-- <joint name = 'timepass_joint' axis = '0 0 0' pos = '0 0 0 ', range = '-1 1'></joint> -->
+                <inertial pos="0 0 0" mass="0.001" diaginertia="4E-10 4E-10 3E-10" />
+            </body> 
+
+            <!-- Thumb -->
+            <body name="thumb_palm_attachement">
+                <geom type="mesh" mesh="thumb_palm_attachement_mesh"></geom>
+
+                <body name="thumb_adduction_abduction">
+                    <joint name="thumb_adduction_abduction_joint" type="hinge" axis="0.0 0.023426 0.009817" pos="0.0142  -0.095797 -0.0135255" range="-0.7 0.7"></joint>
+                    <geom type="mesh" mesh="thumb_adduction_abduction_mesh"> </geom>
+
+                    <body name="thumb_prox_virt">
+                        <joint name="thumb_finger_prox_joint_virt" axis="0.0 -0.38646821 0.92230273" pos="0.0412    -0.0957975 -0.013525" range="0 0.83"></joint>
+                        <inertial pos="0 0 0" mass="0.001" diaginertia="4E-10 4E-10 3E-10" />
+
+                        <body name="thumb_prox">
+                            <joint name="thumb_finger_prox_joint" axis="0.0 -0.38646821 0.92230273" pos="0.05720 -0.0957975 -0.013525" range="0 0.83"></joint>
+                            <geom type="mesh" mesh="thumb_prox_mesh"></geom>
+
+                            <body name="thumb_mid_virt">
+                                <joint name="thumb_finger_mid_joint_virt" axis="0.0 -0.38646821 0.92230273" pos="0.0832   -0.097642 -0.014298" range="0 0.96"></joint>
+                                <inertial pos="0 0 0" mass="0.001" diaginertia="4E-10 4E-10 3E-10" />
+                                
+                                <body name="thumb_mid">
+                                    <joint name="thumb_finger_mid_joint" axis="0.0 -0.38646821 0.92230273" pos="0.09520   -0.097642 -0.014298" range="0 0.96"></joint>
+                                    <geom type="mesh" mesh="thumb_mid_mesh"></geom>
+                                    <body name = "thumb_fingertip" pos= "0.115306 0.093466 -0.012063" />
+                                </body>
+                            </body>
+                        </body>
+                    </body>
+                </body> 
+            </body>
+
+            <!-- Index Finger --> 
+            <body name="index_finger_knuckle">
+                <geom type="mesh" mesh="index_finger_knuckle_mesh"></geom>
+
+                <body name="index_finger_prox_virt">
+                    <joint name="index_finger_prox_virt_joint" axis="0 0 -1" pos="0.00800 -0.01800 -0.026" range="0 0.83"></joint> 
+                    <inertial pos="0 0 0" mass="0.001" diaginertia="4E-10 4E-10 3E-10" />
+
+                    <body name="index_finger_prox">
+                        <joint name="index_finger_prox_joint" axis="0 0 -1" pos="0.00800 -0.00200 -0.026" range="0 0.83"></joint>
+                        <geom type="mesh" mesh="index_finger_prox_mesh" contype = "1" conaffinity = "0"></geom>
+
+                        <body name="index_finger_mid_virt">
+                            <joint name="index_finger_mid_virt_joint" axis="0 0 -1" pos="0.006 0.02100 -0.026" range="0 0.96"></joint>
+                            <inertial pos="0 0 0" mass="0.001" diaginertia="4E-10 4E-10 3E-10"/>
+
+                            <body name="index_finger_mid">
+                                <joint name="index_finger_mid_joint" axis="0 0 -1" pos="0.006 0.03300 -0.026" range="0 0.96"></joint>
+                                <geom type="mesh" mesh="index_finger_mid_mesh"></geom>
+
+                                <body name="index_finger_top_virt">
+                                    <joint name="index_finger_top_virt_joint" axis="0 0 -1" pos="0.005 0.05000 -0.026" range="0 0.68"></joint>
+                                    <inertial pos="0 0 0" mass="0.001" diaginertia="4E-10 4E-10 3E-10" />
+
+                                    <body name="index_finger_top">
+                                        <joint name="index_finger_top_joint" axis="0 0 -1" pos="0.005 0.06000 -0.026" range="0 0.68"></joint>
+                                        <geom type="mesh" mesh="index_finger_top_mesh"></geom>
+                                        <body name = "index_fingertip" pos = "0.011057 0.068 -0.026"/>
+                                    </body>
+                                </body>
+                            </body>
+                        </body>
+                    </body>
+                </body>
+            </body>
+
+
+            <!-- Middle Finger -->
+            <body name="middle_finger_knuckle">
+                <geom type="mesh" mesh="middle_finger_knuckle_mesh"></geom>
+
+                <body name="middle_finger_prox_virt">
+                    <joint name="middle_finger_prox_virt_joint" axis="0 0 -1" pos="0.008 -0.008 0.0095" range="0 0.83"></joint>
+                    <inertial pos="0 0 0" mass="0.001" diaginertia="4E-10 4E-10 3E-10" />
+
+                    <body name="middle_finger_prox">
+                        <joint name="middle_finger_prox_joint" axis="0 0 -1" pos="0.008 0.008 0.0095" range="0 0.83"></joint>
+                        <geom type="mesh" mesh="middle_finger_prox_mesh"></geom>
+
+                        <body name="middle_finger_mid_virt">
+                            <joint name="middle_finger_mid_virt_joint" axis="0 0 -1" pos="0.006 0.031 0.0095" range="0 0.96"></joint>
+                            <inertial pos="0 0 0" mass="0.001" diaginertia="4E-10 4E-10 3E-10" />
+
+                            <body name="middle_finger_mid">
+                                <joint name="middle_finger_mid_joint" axis="0 0 -1" pos="0.006 0.043 0.0095" range="0 0.96"></joint>
+                                <geom type="mesh" mesh="middle_finger_mid_mesh"></geom>
+
+                                <body name="middle_finger_top_virt">
+                                    <joint name="middle_finger_top_virt_joint" axis="0 0 -1" pos="0.005 0.060 0.0095" range="0 0.68"></joint>
+                                    <inertial pos="0 0 0" mass="0.001" diaginertia="4E-10 4E-10 3E-10" />
+
+                                    <body name="middle_finger_top">
+                                        <joint name="middle_finger_top_joint" axis="0 0 -1" pos="0.005 0.070 0.0095" range="0 0.68"></joint>
+                                        <geom type="mesh" mesh="middle_finger_top_mesh"></geom>
+                                        <body name = "middle_fingertip" pos = "0.011057 0.078 0.0095"/>
+                                    </body>
+                                </body>
+                            </body>
+                        </body>
+                    </body>
+                </body>
+            </body>
+
+            <!-- Pinky Finger -->
+            <body name="pinky_finger_knuckle">
+                <geom type="mesh" mesh="pinky_finger_knuckle_mesh"></geom>
+
+                <body name="pinky_finger_prox_virt">
+                    <joint name="pinky_finger_prox_virt_joint" axis="0 0 -1" pos="0.008 -0.018 0.045" range="0 0.83"></joint>
+                    <inertial pos="0 0 0" mass="0.001" diaginertia="4E-10 4E-10 3E-10" />
+
+                    <body name="pinky_finger_prox">
+                        <joint name="pinky_finger_prox_joint" axis="0 0 -1" pos="0.008 -0.002 0.045" range="0 0.83"></joint>
+                        <geom type="mesh" mesh="pinky_finger_prox_mesh" contype = "1" conaffinity = "0"></geom>
+
+                        <body name="pinky_finger_mid_virt">
+                            <joint name="pinky_finger_mid_virt_joint" axis="0 0 -1" pos="0.006 0.021 0.045" range="0 0.96"></joint>
+                            <inertial pos="0 0 0" mass="0.001" diaginertia="4E-10 4E-10 3E-10" />
+
+                            <body name="pinky_finger_mid">
+                                <joint name="pinky_finger_mid_joint" axis="0 0 -1" pos="0.006 0.033 0.045" range="0 0.96"></joint>
+                                <geom type="mesh" mesh="pinky_finger_mid_mesh"></geom>
+
+                                <body name="pinky_finger_top_virt">
+                                    <joint name="pinky_finger_top_virt_joint" axis="0 0 -1" pos="0.005 0.050 0.045" range="0 0.68"></joint>
+                                    <inertial pos="0 0 0" mass="0.001" diaginertia="4E-10 4E-10 3E-10" />
+
+                                    <body name="pinky_finger_top">
+                                        <joint name="pinky_finger_top_joint" axis="0 0 -1" pos="0.005 0.060 0.045" range="0 0.68"></joint>
+                                        <geom type="mesh" mesh="pinky_finger_top_mesh"></geom>
+                                        <body name = "pinky_fingertip" pos = "0.011057 0.068 0.045"/>
+                                    </body>
+                                </body>
+                            </body>
+                        </body>
+                    </body>
+                </body>
+            </body>
+        </body>
+    
+    </worldbody>
+</mujoco>

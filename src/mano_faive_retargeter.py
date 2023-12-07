@@ -44,15 +44,14 @@ class RetargeterNode:
             for tendon, weight in tendons.items():
                 self.joint_map[joint_parameter_names.index(tendon), i] = weight * 0.5
 
-        self.urdf_path =  self.base_path + '/../../sim_control/src/'
-        self.urdf_filename = self.urdf_path + "robot-hand-v4"
+        self.urdf_path =  self.base_path    
+        self.urdf_filename = self.urdf_path + "/robot-hand"
         # convert(self.urdf_filename+".xml", self.urdf_filename+".urdf", asset_file_prefix="../../sim_control/src/")
         prev_cwd = os.getcwd()
         os.chdir(self.urdf_path)
         self.chain = pk.build_chain_from_mjcf(open(self.urdf_filename+".xml").read()).to(device=self.device)
-        # print(self.chain)
+        print(self.chain)
         os.chdir(prev_cwd)
-        # print(self.chain)
 
         self.gc_joints = torch.ones(9).to(self.device) * 30.0
         self.gc_joints.requires_grad_()
@@ -61,13 +60,13 @@ class RetargeterNode:
         self.opt = torch.optim.RMSprop([self.gc_joints], lr=self.lr)
 
         self.root = torch.zeros(1, 3).to(self.device)
-        self.palm_offset = torch.tensor([0.02, -0.0557, 0.015]).to(self.device)
+        self.palm_offset = torch.tensor([0.03   , -0.0557, 0.015]).to(self.device)
 
         
         # self.scaling_coeffs = torch.tensor([0.7171, 1.0081, 0.9031, 0.7086, 0.4387, 0.3660, 0.3966, 0.3981, 0.4923,
         #                                     0.7554, 0.8932, 1.1388, 1.1884, 1.3794, 1.5170]).to(self.device)
         
-        self.scaling_coeffs = torch.tensor([0.7171, 1.0081, 0.9031, 0.7086, 0.3660, 0.3966, 0.3981]).to(self.device)
+        self.scaling_coeffs = torch.tensor([0.1171, 1.0081, 0.9031, 0.7086, 0.7660, 0.3966, 0.3981]).to(self.device)
         
         # self.scaling_coeffs = torch.tensor([0.2171, 0.1081, 0.2031, 0.2086, 0.2660, 0.2966, 0.1981,
         #                                     0.1554, 0.1932, 0.1884]).to(self.device)
@@ -203,6 +202,8 @@ class RetargeterNode:
             self.opt.zero_grad()
             loss.backward()
             self.opt.step()
+
+            # print(self.gc_joints)
 
             with torch.no_grad():
                 self.gc_joints[:] = torch.clamp(self.gc_joints, torch.tensor(gc_limits_lower).to(
