@@ -7,7 +7,7 @@ import os
 import pytorch_kinematics as pk
 import rospy
 from std_msgs.msg import Float32MultiArray, MultiArrayDimension
-from mjcf_urdf_simple_converter import convert
+# from mjcf_urdf_simple_converter import convert
 
 
 from utils import retarget_utils, gripper_utils
@@ -60,7 +60,7 @@ class RetargeterNode:
         self.opt = torch.optim.RMSprop([self.gc_joints], lr=self.lr)
 
         self.root = torch.zeros(1, 3).to(self.device)
-        self.palm_offset = torch.tensor([0.03   , -0.0557, 0.015]).to(self.device)
+        self.palm_offset = torch.tensor([0.03, -0.0557, 0.0095]).to(self.device)
 
         
         # self.scaling_coeffs = torch.tensor([0.7171, 1.0081, 0.9031, 0.7086, 0.4387, 0.3660, 0.3966, 0.3981, 0.4923,
