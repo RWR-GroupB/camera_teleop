@@ -97,7 +97,7 @@ class RetargeterNode:
         self.sub = rospy.Subscriber(
             '/ingress/mano', Float32MultiArray, self.callback, queue_size=1, buff_size=2**24)
         self.pub = rospy.Publisher(
-            '/faive/policy_output', Float32MultiArray, queue_size=10)
+            '/hand/motors/cmd_joint_angles', Float32MultiArray, queue_size=10)
     
 
     def retarget_finger_mano_joints(self, joints: np.array, warm: bool = False, opt_steps: int = 4, dynamic_keyvector_scaling: bool = False):
