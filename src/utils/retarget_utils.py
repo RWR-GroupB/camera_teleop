@@ -42,13 +42,13 @@ GC_TENDONS = {
     'thumb_finger_mid_joint_virt': {'thumb_finger_mid_joint': 1},
 
     'index_finger_prox_virt_joint': {'index_finger_prox_joint': 1},
-    'index_finger_mid_virt_joint': {'index_finger_mid_joint': 1, 'index_finger_top_virt_joint': 0.71, 'index_finger_top_joint': 0.71},
+    'index_finger_mid_virt_joint': {'index_finger_mid_joint': 1, 'index_finger_top_virt_joint': 1, 'index_finger_top_joint': 1},
     
     'middle_finger_prox_virt_joint': {'middle_finger_prox_joint': 1},
-    'middle_finger_mid_virt_joint': {'middle_finger_mid_joint': 1, 'middle_finger_top_virt_joint': 0.71, 'middle_finger_top_joint': 0.71},
+    'middle_finger_mid_virt_joint': {'middle_finger_mid_joint': 1, 'middle_finger_top_virt_joint': 1, 'middle_finger_top_joint': 1},
     
     'pinky_finger_prox_virt_joint': {'pinky_finger_prox_joint': 1},
-    'pinky_finger_mid_virt_joint': {'pinky_finger_mid_joint': 1, 'pinky_finger_top_virt_joint': 0.71, 'pinky_finger_top_joint': 0.71},
+    'pinky_finger_mid_virt_joint': {'pinky_finger_mid_joint': 1, 'pinky_finger_top_virt_joint': 1, 'pinky_finger_top_joint': 1},
 
 }
 

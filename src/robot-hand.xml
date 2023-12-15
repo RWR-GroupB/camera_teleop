@@ -110,7 +110,7 @@
                                 <body name="thumb_mid">
                                     <joint name="thumb_finger_mid_joint" axis="0.0 -0.38646821 0.92230273" pos="0.09520   -0.097642 -0.014298" range="0 0.96"></joint>
                                     <geom type="mesh" mesh="thumb_mid_mesh"></geom>
-                                    <body name = "thumb_fingertip" pos= "0.115306 0.293466 0.312063" />
+                                    <body name = "thumb_fingertip" pos= "0.115306 0.353466 -0.162063" />
                                     
                                 </body>
                             </body>

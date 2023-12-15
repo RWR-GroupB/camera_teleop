@@ -66,7 +66,8 @@ class RetargeterNode:
         # self.scaling_coeffs = torch.tensor([0.7171, 1.0081, 0.9031, 0.7086, 0.4387, 0.3660, 0.3966, 0.3981, 0.4923,
         #                                     0.7554, 0.8932, 1.1388, 1.1884, 1.3794, 1.5170]).to(self.device)
         
-        self.scaling_coeffs = torch.tensor([0.1171, 1.0081, 0.9031, 0.7086, 0.7660, 0.3966, 0.3981]).to(self.device)
+        self.scaling_coeffs = torch.tensor([0.1571, 0.15, 0.15, 0.15]).to(self.device)
+        self.tau = 0.1
         
         # self.scaling_coeffs = torch.tensor([0.2171, 0.1081, 0.2031, 0.2086, 0.2660, 0.2966, 0.1981,
         #                                     0.1554, 0.1932, 0.1884]).to(self.device)
@@ -97,8 +98,12 @@ class RetargeterNode:
         self.sub = rospy.Subscriber(
             '/ingress/mano', Float32MultiArray, self.callback, queue_size=1, buff_size=2**24)
         self.pub = rospy.Publisher(
-            '/hand/motors/cmd_joint_angles', Float32MultiArray, queue_size=10)
-    
+            '/hand/motors/cmd_joint_angles', Float32MultiArray, queue_size=2)
+
+
+        self.old_data = np.zeros([1,9])
+        self.new_data = np.zeros([1,9])
+
 
     def retarget_finger_mano_joints(self, joints: np.array, warm: bool = False, opt_steps: int = 4, dynamic_keyvector_scaling: bool = False):
         """
@@ -240,8 +245,11 @@ class RetargeterNode:
         # Create a Float32MultiArray message and set its 'data' field to the flattened array
         arr = self.target_angles
         msg = Float32MultiArray()
-        msg.data = arr.flatten().tolist()
-
+        self.new_data = np.array(arr.flatten().tolist())
+        self.new_data = self.tau*self.new_data + (1-self.tau)*self.old_data
+        
+        msg.data = self.new_data
+        self.old_data = self.new_data
         # Set the 'layout' field of the message to describe the shape of the original array
         rows_dim = MultiArrayDimension()
         rows_dim.label = 'rows'
@@ -260,8 +268,7 @@ class RetargeterNode:
 
 
 
-    def visulaize_keyvectors(self, key_vec):
-        pass
+
 
 
 if __name__ == '__main__':
